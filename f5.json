@@ -12,9 +12,6 @@
         "subnetName": {
             "type": "string"
         },
-        "virtualNetworkId": {
-            "type": "string"
-        },
         "publicIpAddressName": {
             "type": "string"
             
@@ -25,9 +22,6 @@
         "publicIpAddressSku": {
             "type": "string"
         },
-        "pipDeleteOption": {
-            "type": "string"
-        },
         "virtualMachineName": {
             "type": "string"
         },
@@ -35,29 +29,34 @@
             "type": "string"
         },
         "osDiskType": {
-            "type": "string"
+            "type": "string",
+            "defaultValue" : "Premium_LRS"
         },
-        "osDiskDeleteOption": {
-            "type": "string"
-        },
+        
         "virtualMachineSize": {
             "type": "string"
         },
-        "nicDeleteOption": {
-            "type": "string"
-        },
+        
         "adminUsername": {
-            "type": "string",
+            "type": "string"
             
         },
         "adminPassword": {
             "type": "secureString"
             
+        },
+        "networkResourceGroupName" : {
+            "type" : "string",
+            "defaultValue" : "rg-hub-demo-internal-shared-westeurope-001"
+        },
+         "virtualNetworkName" : {
+            "type" : "string",
+            "defaultValue" : "vnet-default-hub-westeurope"
         }
     },
     "variables": {
-        "vnetId": "[parameters('virtualNetworkId')]",
-                "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
+        "vnetID": "[resourceId(parameters('networkResourceGroupName'), 'Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
+        "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('subnetName'))]"
     },
     "resources": [
         {
@@ -78,10 +77,8 @@
                             },
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
-                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]",
-                                "properties": {
-                                    "deleteOption": "[parameters('pipDeleteOption')]"
-                                }
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]"
+                                
                             }
                         }
                     }
@@ -117,8 +114,8 @@
                         "createOption": "fromImage",
                         "managedDisk": {
                             "storageAccountType": "[parameters('osDiskType')]"
-                        },
-                        "deleteOption": "[parameters('osDiskDeleteOption')]"
+                        }
+                        
                     },
                     "imageReference": {
                         "publisher": "f5-networks",
@@ -130,10 +127,8 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]",
-                            "properties": {
-                                "deleteOption": "[parameters('nicDeleteOption')]"
-                            }
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+                            
                         }
                     ]
                 },
@@ -159,11 +154,6 @@
                 "product": "f5-big-ip-byol"
             }
         }
-    ],
-    "outputs": {
-        "adminUsername": {
-            "type": "string",
-            "value": "[parameters('adminUsername')]"
-        }
-    }
+    ]
+   
 }
